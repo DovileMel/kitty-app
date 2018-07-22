@@ -8,11 +8,10 @@ class ButtonBox extends React.Component {
     }
 
     render() {
-
         return (
             <View style={styles.container}>
                 <Button
-                    color='#E0E0E0'
+                    color='#9E9E9E'
                     title={this.props.btnTitle}
                     onPress={this.handleClick}
                 />

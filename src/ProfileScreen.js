@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, Button, Image } from 'react-native';
+import PropTypes from 'prop-types';
 
 class ProfileScreen extends React.Component {
     static navigationOptions = {

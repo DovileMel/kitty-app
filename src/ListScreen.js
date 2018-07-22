@@ -1,23 +1,25 @@
 import React from 'react';
-import { 
-    StyleSheet, 
-    Text, 
-    View, 
-    Button, 
-    Image, 
-    FlatList, 
-    TouchableHighlight, 
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Image,
+    FlatList,
+    TouchableHighlight,
     ScrollView,
-    ActivityIndicator 
+    ActivityIndicator,
+    Modal
 } from 'react-native';
 import ButtonBox from './ButtonBox';
+import SelectSearch from './SelectSearch';
 const kittyNames = require('../data/names.json');
-
 
 class ListScreen extends React.Component {
     state = {
         kitties: [],
-        searchAmount: 30
+        searchAmount: 30,
+        modalVisible: false,
     }
 
     static navigationOptions = {
@@ -31,7 +33,8 @@ class ListScreen extends React.Component {
     getImages = (number) => {
         this.setState({
             kitties: [],
-            searchAmount: number
+            searchAmount: number,
+            modalVisible: false
         });
 
         [...Array(number)].forEach((_, item) => {
@@ -56,37 +59,68 @@ class ListScreen extends React.Component {
         });
     }
 
+    setModalVisible = (visible) => {
+        this.setState({ modalVisible: visible });
+    }
+
     render() {
         const { navigate } = this.props.navigation;
+        
+        if (this.state.kitties.length === 0 ){
+            return <Text>No internet connection</Text>
+        }
         if (this.state.kitties.length < this.state.searchAmount) {
             return (
-              <ActivityIndicator
-                animating={true}
-                style={styles.indicator}
-                size="large"
-              />
+                <ActivityIndicator
+                    animating={true}
+                    style={styles.indicator}
+                    size="large"
+                />
             );
-          }
+        }
         return (
             <View style={styles.container}>
                 <View style={styles.btn}>
                     <ButtonBox btnTitle='30' btnAction={this.getImages} />
                     <ButtonBox btnTitle='50' btnAction={this.getImages} />
-                    <ButtonBox btnTitle='100' btnAction={this.getImages} />
+                    <ButtonBox btnTitle='100' 
+                    btnAction={this.getImages} 
+                    />
+                    <TouchableHighlight
+                        style={styles.filter}
+                        onPress={() => {
+                            this.setModalVisible(true);
+                        }}>
+                        <Text>Show Filter</Text>
+                    </TouchableHighlight>
                 </View>
+                
+                <Modal
+                    animationType="slide"
+                    transparent={false}
+                    visible={this.state.modalVisible}
+                    onRequestClose={() => {
+                        this.setModalVisible(!this.state.modalVisible);
+                    }}>
+                    <View style={styles.container}>
+                        <SelectSearch btnAction={this.getImages} />
+                    </View>
+                </Modal>
+
                 <ScrollView contentContainerStyle={styles.contentContainer}>
                     <FlatList
                         data={this.state.kitties.map(kitty => {
                             return { key: kitty.url, name: kitty.name }
                         })}
                         renderItem={({ item }) => (
-                            <View style={styles.listItem} key={item.key+item.name}>
+                            <View style={styles.listItem} key={item.key + item.name}>
                                 <TouchableHighlight
-                                    onPress={() => navigate('Profile', 
-                                    {name: item.name,
-                                    image: item.key
-                                    } )}>
-                                    <Image style={styles.image} source={{ uri: item.key }}/>
+                                    onPress={() => navigate('Profile',
+                                        {
+                                            name: item.name,
+                                            image: item.key
+                                        })}>
+                                    <Image style={styles.image} source={{ uri: item.key }} />
                                 </TouchableHighlight>
                                 <Text style={styles.titleText}>
                                     {item.name}
@@ -109,7 +143,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         height: 80
-      },
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -139,6 +173,9 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
     },
+    filter: {
+        margin: 15,
+    }
 });
 
 export default ListScreen;
