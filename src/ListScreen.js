@@ -1,5 +1,15 @@
 import React from 'react';
-import { StyleSheet, Text, View, Button, Image, FlatList, TouchableHighlight, ScrollView } from 'react-native';
+import { 
+    StyleSheet, 
+    Text, 
+    View, 
+    Button, 
+    Image, 
+    FlatList, 
+    TouchableHighlight, 
+    ScrollView,
+    ActivityIndicator 
+} from 'react-native';
 import ButtonBox from './ButtonBox';
 const kittyNames = require('../data/names.json');
 
@@ -7,6 +17,7 @@ const kittyNames = require('../data/names.json');
 class ListScreen extends React.Component {
     state = {
         kitties: [],
+        searchAmount: 30
     }
 
     static navigationOptions = {
@@ -14,12 +25,13 @@ class ListScreen extends React.Component {
     };
 
     componentDidMount = () => {
-        this.getImages(10);
+        this.getImages(30);
     }
 
     getImages = (number) => {
         this.setState({
-            kitties: []
+            kitties: [],
+            searchAmount: number
         });
 
         [...Array(number)].forEach((_, item) => {
@@ -31,7 +43,8 @@ class ListScreen extends React.Component {
                     return Promise.resolve(data.url);
                 })
                 .then((data) => {
-                    const kittyHasName = kittyNames[0].names[item]
+                    const randomNumber = Math.floor(Math.random() * kittyNames[0].names.length);
+                    const kittyHasName = kittyNames[0].names[randomNumber]
                     this.setState({
                         kitties: [...this.state.kitties, { id: item, url: data, name: kittyHasName }],
                     })
@@ -45,21 +58,29 @@ class ListScreen extends React.Component {
 
     render() {
         const { navigate } = this.props.navigation;
+        if (this.state.kitties.length < this.state.searchAmount) {
+            return (
+              <ActivityIndicator
+                animating={true}
+                style={styles.indicator}
+                size="large"
+              />
+            );
+          }
         return (
             <View style={styles.container}>
                 <View style={styles.btn}>
-                    <ButtonBox btnTitle='10' btnAction={this.getImages} />
+                    <ButtonBox btnTitle='30' btnAction={this.getImages} />
                     <ButtonBox btnTitle='50' btnAction={this.getImages} />
                     <ButtonBox btnTitle='100' btnAction={this.getImages} />
                 </View>
-
                 <ScrollView contentContainerStyle={styles.contentContainer}>
                     <FlatList
                         data={this.state.kitties.map(kitty => {
                             return { key: kitty.url, name: kitty.name }
                         })}
                         renderItem={({ item }) => (
-                            <View style={styles.listItem} key={item.key}>
+                            <View style={styles.listItem} key={item.key+item.name}>
                                 <TouchableHighlight
                                     onPress={() => navigate('Profile', 
                                     {name: item.name,
@@ -83,6 +104,12 @@ const styles = StyleSheet.create({
     contentContainer: {
         backgroundColor: '#fff',
     },
+    indicator: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 80
+      },
     container: {
         flex: 1,
         backgroundColor: '#fff',
